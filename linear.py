@@ -76,7 +76,7 @@ def ols_1d(x1, y, order=2, intercept=True):
     assert len(x1) == len(y)
     assert order >= 1
     
-    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(np.array(x))
+    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(np.array(x1))
     y = np.array(y)
     
     format = 'b, x' if intercept else 'x'
