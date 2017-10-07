@@ -142,15 +142,15 @@ if __name__ == '__main__':
     order = 2
     intercept = True
     
-    x = 10*np.random.random(5)
-    y = 5*np.random.random(5) + 3
+    x = np.array([1, 2, 3, 4, 5])
+    y = -0.5*x**2 + 4*x + 12
     
     sol = ols_1d(x, y, order, intercept)
 
     coef = sol[1]
     st = 0 if intercept else 1
 
-    f = np.vectorize(lambda x: (coef * np.array([x**i for i in xrange(st, order+1)])).sum())
+    f = np.poly1d(coef[::-1])
     
     xn = np.linspace(0, x.max())
     yn = f(xn)
