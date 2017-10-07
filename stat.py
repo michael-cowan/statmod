@@ -1,5 +1,5 @@
 import pandas as pd
-from linear import *
+from ols import *
 
 # generic data paths
 path_gen = 'Data\MLB_{}_stats.csv'
