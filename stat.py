@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ols import *
+import ols
+
+"""
+3.1 Plate appearances per team game to qualify
+"""
 
 # generic data paths
 path_gen = 'Data\MLB_{}_stats.csv'
@@ -27,7 +31,7 @@ y = b.H.tolist()
 plt.plot(x1, x2, '.')
 plt.show()
 
-#sol = ols_2d(x1, x2, y)
+#sol = ols.ols_multi(x1, x2, y)
 """
 for y in years:
     plt.plot(ns, 100.*f(ns, y))

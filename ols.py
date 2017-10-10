@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+import matplotlib.pyplot as plt
 
 def ols(x, y, format=''):
     # average y from data
@@ -70,7 +71,7 @@ def ols(x, y, format=''):
     return format, b, pval, r_sq
 
 
-def ols_1d(x1, y, order=2, intercept=True):
+def ols_sing(x1, y, order=2, intercept=True):
     assert isinstance(x1, list) or isinstance(x1, np.ndarray)
     assert isinstance(y, list) or isinstance(y, np.ndarray)
     assert len(x1) == len(y)
@@ -92,7 +93,7 @@ def ols_1d(x1, y, order=2, intercept=True):
     return ols(x, y, format)
 
 
-def ols_2d(x1, x2, y, order=2):
+def ols_multi(x1, x2, y, order=2):
     assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
     
     format = "b, x1, x2"
@@ -137,15 +138,13 @@ def ols_2d(x1, x2, y, order=2):
     return ols(x, y, format)
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    
     order = 2
     intercept = True
     
     x = np.array([1, 2, 3, 4, 5])
     y = -0.5*x**2 + 4*x + 12
     
-    sol = ols_1d(x, y, order, intercept)
+    sol = ols_sing(x, y, order, intercept)
 
     coef = sol[1]
     st = 0 if intercept else 1
