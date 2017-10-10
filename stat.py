@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 from ols import *
 
@@ -10,9 +12,6 @@ field = pd.read_csv(path_gen.format('fielding'))
 
 
 year = bat.groupby('yearID')
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 f = np.vectorize(lambda n, y: bat[(bat.G < n) & (bat.yearID == y)].count().playerID / float(len(bat[bat.yearID == y])))
 
