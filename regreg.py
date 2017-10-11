@@ -72,5 +72,4 @@ def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
     return fig, ax, sol, sol2
 
 if __name__ == '__main__':
-    # test all ridge regression, elastic net, and LASSO
     fig, ax, rr_sol, ols_sol = test()
