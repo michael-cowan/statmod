@@ -2,7 +2,7 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 
-def ols(x, y, format=''):
+def ols(x, y, format='', show=True):
     # average y from data
     y_avg = y.mean()
 
@@ -62,16 +62,21 @@ def ols(x, y, format=''):
 
     # correlation coefficient, R^2 = (tot_sos - resid_sos) / (tot_sos)
     r_sq = reg_sos / tot_sos
-    
-    print 'Format:\n%s\n' % format
-    print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b]) 
-    print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
-    print 'R^2: %s' % str(r_sq)
-    
+
+    # Reverse format and b such that its order matches np.poly1d
+    format = ', '.join(format.replace(',', '').split()[::-1])
+    b = b[::-1]
+
+    if show:
+        print 'Format:\n%s\n' % format
+        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b]) 
+        print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
+        print 'R^2: %s' % str(r_sq)
+
     return format, b, pval, r_sq
 
 
-def ols_sing(x1, y, order=2, intercept=True):
+def ols_sing(x1, y, order=2, intercept=True, show=True):
     assert isinstance(x1, list) or isinstance(x1, np.ndarray)
     assert isinstance(y, list) or isinstance(y, np.ndarray)
     assert len(x1) == len(y)
@@ -90,10 +95,10 @@ def ols_sing(x1, y, order=2, intercept=True):
 
     assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
 
-    return ols(x, y, format)
+    return ols(x, y, format, show)
 
 
-def ols_multi(x1, x2, y, order=2):
+def ols_multi(x1, x2, y, order=2, show=True):
     assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
     
     format = "b, x1, x2"
@@ -135,16 +140,16 @@ def ols_multi(x1, x2, y, order=2):
 
     assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
     
-    return ols(x, y, format)
+    return ols(x, y, format, show)
 
 if __name__ == '__main__':
     order = 2
     intercept = True
     
     x = np.array([1, 2, 3, 4, 5])
-    y = -0.5*x**2 + 4*x + 12
+    y = np.poly1d([-0.5, 4, 12])(x)
     
-    sol = ols_sing(x, y, order, intercept)
+    sol = ols_sing(x, y, order, intercept, show=True)
 
     coef = sol[1]
     st = 0 if intercept else 1
