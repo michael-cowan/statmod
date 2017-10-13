@@ -2,6 +2,19 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 
+class solution:
+    def __init__(self, format, b, pval, r_sq):
+        self.info = {'format': 'string representation of model',
+                     'b': 'model coefficients',
+                     'pval': 'p distribution numbers',
+                     'r_sq': 'correlation coefficient (R^2)'
+                     }
+
+        self.format = format
+        self.b = b
+        self.pval = pval
+        self.r_sq = r_sq
+
 def ols(x, y, format='', show=True):
     # average y from data
     y_avg = y.mean()
@@ -74,7 +87,7 @@ def ols(x, y, format='', show=True):
         print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
         print 'R^2: %s' % str(r_sq)
 
-    return format, b, pval, r_sq
+    return solution(format, b, pval, r_sq)
 
 
 def ols_sing(x1, y, order=2, intercept=True, show=True):
