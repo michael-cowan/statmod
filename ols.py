@@ -63,9 +63,10 @@ def ols(x, y, format='', show=True):
     # correlation coefficient, R^2 = (tot_sos - resid_sos) / (tot_sos)
     r_sq = reg_sos / tot_sos
 
-    # Reverse format and b such that its order matches np.poly1d
+    # Reverse format, b, & pval such that its order matches np.poly1d
     format = ', '.join(format.replace(',', '').split()[::-1])
     b = b[::-1]
+    pval = pval[::-1]
 
     if show:
         print 'Format:\n%s\n' % format
