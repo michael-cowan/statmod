@@ -155,7 +155,7 @@ if __name__ == '__main__':
     coef = sol[1]
     st = 0 if intercept else 1
 
-    f = np.poly1d(coef[::-1])
+    f = np.poly1d(coef)
     
     xn = np.linspace(0, x.max())
     yn = f(xn)
