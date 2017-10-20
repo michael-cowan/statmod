@@ -24,6 +24,8 @@ bat = bat[bat.PA >= 3.1]
 
 
 year = bat.groupby('yearID')
+oplayer = bat.groupby('playerID')
+dplayer = field.groupby('playerID')
 
 f = np.vectorize(lambda n, y: bat[(bat.G < n) & (bat.yearID == y)].count().playerID / float(len(bat[bat.yearID == y])))
 
@@ -39,7 +41,7 @@ x2 = b.G.tolist()
 y = b.H.tolist()
 
 #sol = ols.ols_multi(x1, x2, y)
-sol = ols.ols_sing(x2, y, order=3)
+sol = ols.ols_sing(x2, y, order=2)
 
 plt.plot(x2, y, '.', alpha=0.7)
 plt.plot(x2, np.poly1d(sol.b)(x2))
