@@ -1,29 +1,56 @@
 import numpy as np
 from scipy import stats
+import pandas as pd
 import matplotlib.pyplot as plt
 
-class solution:
-    def __init__(self, format, b, pval, r_sq):
+class Solution:
+    def __init__(self, format, b, pval, r2, name):
         self.info = {'format': 'string representation of model',
                      'b': 'model coefficients',
                      'pval': 'p distribution numbers',
-                     'r_sq': 'correlation coefficient (R^2)'
+                     'r2': 'correlation coefficient (R^2)',
+                     'sum': 'pandas DataFrame summary of results',
+                     'name': 'info on inputs being used',
+                     'func': 'function to use model by passing in inputs'
                      }
 
         self.format = format
         self.b = b
         self.pval = pval
-        self.r_sq = r_sq
+        self.r2 = r2
+        self.name = name
+        self.sum = pd.DataFrame({'Format': self.format.split(', '),
+                                 'Coefficient': self.b.T.tolist()[0],
+                                 'PValue': self.pval.tolist()
+                                 })[['Format', 'Coefficient', 'PValue']]
+ 
+    def func(self, xin):
+        if isinstance(xin, int) or isinstance(xin, float):
+            xin = [xin]
+        ans = 0
+        for i, row in self.sum.iterrows():
+            if '*' in row.Format:
+                n1, n2 = map(int, row.Format.replace('x', '').split('*'))
+                ans += row.Coefficient * xin[n1 - 1] * xin[n2 - 1]
+            elif '^' in row.Format:
+                n3, p1 = map(int, row.Format.replace('x', '').split('^'))
+                ans += row.Coefficient * (xin[n3 - 1] ** p1)
+            elif 'x' in row.Format:
+                ans += row.Coefficient * xin[int(row.Format.replace('x', '')) - 1]
+            else:
+                ans += row.Coefficient
+        return ans
 
-def ols(x, y, format='', show=True):
+def ols(x, y, format='', show=True, name=''):
     # average y from data
     y_avg = y.mean()
 
     # Variance - Covariance Matrix: ([X]T * [X])^-1
     vcv = np.linalg.pinv(np.dot(x.T, x))
-
     # {b} = ([X]T * [X])^-1 * [X]T * {Y} * +/- {e}
-    b = np.dot(np.dot(vcv, x.T), y)
+    
+    # {b} = [X]^-1 * {Y} * +/- {e}
+    b = np.dot(np.linalg.pinv(x), y)
 
     # estimates
     y_est = np.array([np.dot(x[i, :], b) for i in xrange(len(x[:, 0]))])
@@ -74,7 +101,7 @@ def ols(x, y, format='', show=True):
     #prob_f = 1 - stats.f.cdf(reg_mean_sq / resid_mean_sq, reg_dof, resid_dof)
 
     # correlation coefficient, R^2 = (tot_sos - resid_sos) / (tot_sos)
-    r_sq = reg_sos / tot_sos
+    r2 = reg_sos / tot_sos
 
     # Reverse format, b, & pval such that its order matches np.poly1d
     format = ', '.join(format.replace(',', '').split()[::-1])
@@ -85,78 +112,91 @@ def ols(x, y, format='', show=True):
         print 'Format:\n%s\n' % format
         print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b]) 
         print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
-        print 'R^2: %s' % str(r_sq)
+        print 'R^2: %s' % str(r2)
+        print '_' * 100
 
-    return solution(format, b, pval, r_sq)
+    return Solution(format, b, pval, r2, name)
 
 
-def ols_sing(x1, y, order=2, intercept=True, show=True):
+def ols_sing(x1, y, order=2, intercept=True, show=True, name=''):
     assert isinstance(x1, list) or isinstance(x1, np.ndarray)
     assert isinstance(y, list) or isinstance(y, np.ndarray)
     assert len(x1) == len(y)
     assert order >= 1
     
-    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(np.array(x1))
+    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(x2)
     y = np.array(y)
     
-    format = 'b, x' if intercept else 'x'
+    format = 'b, x1' if intercept else 'x1'
     
     if order > 1:
-        x1 = np.vstack(np.array(x1))
+        x1 = np.vstack(x1)
         for i in xrange(2, order+1):
             x = np.concatenate((x, x1**i), axis=1)
-            format += ', x^%i' % i
+            format += ', x1^%i' % i
 
     assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
 
-    return ols(x, y, format, show)
+    return ols(x, y, format, show, name)
 
 
-def ols_multi(x1, x2, y, order=2, show=True):
+def ols_multi(xi, y, order=2, pair_terms=True, intercept=True, show=True, name=''):
     assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
-    
-    format = "b, x1, x2"
-    
-    if order == 2:
-        format += ", x1x2, x1^2, x2^2"
-        
-    for z in [x1, x2, y]:
+
+    # make sure xi and y are of type np.ndarray
+    for z in [xi, y]:
         if not (isinstance(z, list) or isinstance(z, np.ndarray)):
             raise TypeError("Inputs must be a list or 1D array")
         if len(z) < order:
             raise ValueError("Not enough data points to solve OLS with order = %i") % order
 
-    x1 = np.array(x1)
-    x2 = np.array(x2)
-    y = np.vstack(np.array(y))
+    xi = np.array(xi)
+    y = np.vstack(y)
 
-    assert len(x1) == len(x2) == len(y), "Inputs and output must have the same length"
+    assert len(xi) == len(y), "Inputs and output must have the same length"
 
-    # intercept
-    yint = [1]*len(x1)
+    if xi.shape[1] == 1:
+        xi = np.vstack(xi)
 
-    # main x matrix
-    x = np.array([yint, x1, x2]).T
+    # initialize format
+    format = ''
+    xmade = False
 
-    if order > 1:
-        # (x1 * x2)
-        x1x2 = x1 * x2
+    # add intercept
+    if intercept:
+        format += 'b '
+        x = np.vstack([1]*len(xi))
+        xmade = True
 
-        # (x1)^2
-        x1_sq = x1 ** 2
-        
-        # (x2)^2
-        x2_sq = x2 ** 2
-        
-        h = np.array([x1x2, x1_sq, x2_sq]).T
-        
-        x = np.concatenate((x, h), axis=1)
+    # add in first order inputs to format & x
+    format += ', '.join(['x' + str(i+1) for i in xrange(xi.shape[1])])
+    if xmade:
+        x = np.concatenate((x, xi), axis=1)
+    else:
+        x = xi.copy()
 
-    assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
+    # add second order terms
+    if order == 2:
+        format += ', ' + ', '.join(['x' + str(j+1) + '^2' for j in xrange(xi.shape[1])])
+        x = np.concatenate((x, xi**2), axis=1)
+
+    # add pair terms
+    if pair_terms:
+        for z1 in xrange(1, xi.shape[1]):
+            for z2 in xrange(z1+1, xi.shape[1]+1):
+                format += ', x%i*x%i' %(z1, z2)
+                x = np.concatenate((x, np.vstack(x[:, z1] * x[:, z2])), axis=1)
+
+    #assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
     
-    return ols(x, y, format, show)
+    return ols(x, y, format, show, name)
 
 if __name__ == '__main__':
+    x = np.random.random([500, 10])
+    y = x.sum(axis=1)
+    
+    sol = ols_multi(x, y, 2)
+    """
     order = 2
     intercept = True
     
@@ -177,3 +217,4 @@ if __name__ == '__main__':
     plt.plot(xn, yn)
     plt.title('R2 = %0.4f' % sol[-1])
     plt.show()
+    """
