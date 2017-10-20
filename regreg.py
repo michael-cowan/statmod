@@ -42,7 +42,7 @@ def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
         y = x^2 + 2x + 3 + (error)
     """
     x = np.linspace(1, 5)
-    y = np.poly1d(testfuncb)(x) + 5*np.random.random(len(x))
+    y = polyfunc(x, testfuncb) + 5*np.random.random(len(x))
     
     bguess = np.array([1]*6)
 
@@ -57,7 +57,7 @@ def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
 
     # solve with OLS
     sol2 = ols.ols_sing(x, y, show=False)
-    ax.plot(x, polyfunc(x, sol2[1]))
+    ax.plot(x, polyfunc(x, sol2.b))
     leg.append('OLS Solution')
 
     # plot the actual function
