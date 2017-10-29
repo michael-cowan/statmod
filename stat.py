@@ -8,15 +8,14 @@ import ols
 """
 
 # generic data paths
-path_gen = 'Data\MLB_{}_stats.csv'
+path_gen = 'Data\MLB_batting_stats.csv'
 
-# generic batting & fielding data
-bat = pd.read_csv(path_gen.format('batting'))
-field = pd.read_csv(path_gen.format('fielding'))
+# generic batting data
+bat = pd.read_csv(path_gen)
 
 
 ##### REFINING DATA #####
-# plate appearances (PA)
+# plate appearances per game (PA)
 bat['PA'] = bat.apply(lambda r: (r.AB + r.BB) / 162., axis=1)
 
 # PA must be > 3.1 to qualify for batting title
@@ -25,7 +24,6 @@ bat = bat[bat.PA >= 3.1]
 
 year = bat.groupby('yearID')
 oplayer = bat.groupby('playerID')
-dplayer = field.groupby('playerID')
 
 f = np.vectorize(lambda n, y: bat[(bat.G < n) & (bat.yearID == y)].count().playerID / float(len(bat[bat.yearID == y])))
 
