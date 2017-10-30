@@ -41,6 +41,13 @@ class Solution:
                 ans += row.Coefficient
         return ans
 
+    def show(self):
+        print 'Format:\n%s\n' % self.format
+        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in self.b]) 
+        print 'P Values:\n%s\n' % ', '.join([str(i) for i in self.pval])
+        print 'R^2: %s' % str(self.r2)
+        print '_' * 100
+
 def ols(x, y, format='', show=True, name=''):
     # average y from data
     y_avg = y.mean()
