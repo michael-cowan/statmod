@@ -19,12 +19,18 @@ class Solution:
         self.pval = pval
         self.r2 = r2
         self.name = name
-        self.sum = pd.DataFrame({'Format': self.format.split(', '),
-                                 'Coefficient': self.b.T.tolist()[0],
-                                 'PValue': self.pval.tolist()
-                                 })[['Format', 'Coefficient', 'PValue']]
- 
+        if format:
+            self.sum = pd.DataFrame({'Format': self.format.split(', '),
+                                    'Coefficient': self.b.T.tolist()[0],
+                                    'PValue': self.pval.tolist()
+                                    })[['Format', 'Coefficient', 'PValue']]
+        else:
+            self.sum = pd.DataFrame()
+
     def func(self, xin):
+        if self.sum.empty:
+            print 'This regression resulted in an exception. A solution was not found'
+            return
         if isinstance(xin, int) or isinstance(xin, float):
             xin = [xin]
         ans = 0
@@ -42,6 +48,8 @@ class Solution:
         return ans
 
     def show(self):
+        if self.name:
+            print 'Name: "%s"\n' % self.name
         print 'Format:\n%s\n' % self.format
         print 'coefficients:\n%s\n' % ', '.join([str(i) for i in self.b]) 
         print 'P Values:\n%s\n' % ', '.join([str(i) for i in self.pval])
@@ -52,12 +60,17 @@ def ols(x, y, format='', show=True, name=''):
     # average y from data
     y_avg = y.mean()
 
-    # Variance - Covariance Matrix: ([X]T * [X])^-1
-    vcv = np.linalg.pinv(np.dot(x.T, x))
-    # {b} = ([X]T * [X])^-1 * [X]T * {Y} * +/- {e}
-    
-    # {b} = [X]^-1 * {Y} * +/- {e}
-    b = np.dot(np.linalg.pinv(x), y)
+    try:
+        # Variance - Covariance Matrix: ([X]T * [X])^-1
+        vcv = np.linalg.pinv(np.dot(x.T, x))
+        # {b} = ([X]T * [X])^-1 * [X]T * {Y} * +/- {e}
+
+        # {b} = [X]^-1 * {Y} * +/- {e}
+        b = np.dot(np.linalg.pinv(x), y)
+    except Exception as e:
+        if show:
+            print e
+        return Solution('', np.array([]), np.array([]), 0, str(e))
 
     # estimates
     y_est = np.array([np.dot(x[i, :], b) for i in xrange(len(x[:, 0]))])
