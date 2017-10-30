@@ -2,55 +2,61 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import ols
+import itertools
 
 """
 3.1 Plate appearances per team game to qualify
+    PA = (AB + BB) / 162
+Only AL & NL leagues
+1955 - 2016
+20 main parameters of interest
 """
 
 # generic data paths
-path_gen = 'Data\MLB_batting_stats.csv'
+path_gen = 'Data\MLB_batting_stats.hdf'
 
 # generic batting data
-bat = pd.read_csv(path_gen)
-
-
-##### REFINING DATA #####
-# plate appearances per game (PA)
-bat['PA'] = bat.apply(lambda r: (r.AB + r.BB) / 162., axis=1)
-
-# PA must be > 3.1 to qualify for batting title
-bat = bat[bat.PA >= 3.1]
-
-
-year = bat.groupby('yearID')
-oplayer = bat.groupby('playerID')
-
-f = np.vectorize(lambda n, y: bat[(bat.G < n) & (bat.yearID == y)].count().playerID / float(len(bat[bat.yearID == y])))
+bat = pd.read_hdf(path_gen)
 
 ns = np.arange(bat.G.max() + 1)
-years = range(bat.yearID.min(), bat.yearID.max()+1)
-
-b = bat[bat.H != 0].sort('G')
+years = pd.unique(bat.yearID).tolist()
 
 
+if 0:
+    # parameters of interest
+    params = ['G',
+              'AB',
+              'R',
+              'H',
+              '2B',
+              '3B',
+              'HR',
+              'RBI',
+              'SB',
+              'CS',
+              'BB',
+              'SO',
+              'IBB',
+              'HBP',
+              'SH',
+              'SF',
+              'GIDP',
+              'age',
+              #'PA',
+              'avg'
+              ]
 
-x1 = b.age.tolist()
-x2 = b.G.tolist()
-y = b.H.tolist()
+    sols = []
+    for p in itertools.combinations(params, 4):
+        for i in xrange(len(p)):
+            y = p[i]
+            x = list(p[:i] + p[i+1:])
+            yval = bat[y].tolist()
+            xval = bat[x].as_matrix()
+        
+            s = ols.ols_multi(xval, yval, pair_terms=True, intercept=True, show=False, name=', '.join(x) + ': ' + y)
+            if s.r2 >= 0.8:
+                sols.append(s)
 
-#sol = ols.ols_multi(x1, x2, y)
-sol = ols.ols_sing(x2, y, order=2)
-
-plt.plot(x2, y, '.', alpha=0.7)
-plt.plot(x2, np.poly1d(sol.b)(x2))
-plt.legend(['Data', 'Model'])
-plt.xlabel('Games played')
-plt.ylabel('Number of hits')
-plt.show()
-"""
-for y in years:
-    plt.plot(ns, 100.*f(ns, y))
-plt.xlabel('Max # of Games Played')
-plt.ylabel('% of Players in League')
-plt.show()
-"""
+    sols.sort(key=lambda a: a.r2, reverse=True)
+    print '%i solutions were found with an R2 >= 0.8' % len(sols)
