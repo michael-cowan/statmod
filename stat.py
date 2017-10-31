@@ -43,7 +43,9 @@ if 0:
               'GIDP',
               'age',
               #'PA',
-              'avg'
+              'avg',
+              'height',
+              'weight'
               ]
 
     sols = []
