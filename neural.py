@@ -1,7 +1,7 @@
 import numpy as np
 
 class NeuralNetwork:
-    def __init__(self, inputs, outputs, neurons=3):
+    def __init__(self, inputs, outputs, neurons=2):
         # input matrix
         self.x = np.array(inputs)
         if len(self.x.shape) == 1:
@@ -12,11 +12,14 @@ class NeuralNetwork:
         if len(self.yact.shape) == 1:
             self.yact = self.yact.reshape(1, self.yact.size)
         
-        # number of input neurons
+        # number of inputs
         self.nin = self.x.shape[1]
         
-        # number of output neurons
+        # number of outputs
         self.nout = self.yact.shape[1]
+        
+        # number of hidden neurons
+        self.neurons = neurons
         
         # weights from inputs to hidden neuron layer
         self.w1 = np.random.random([self.nin, neurons])
@@ -87,7 +90,7 @@ class NeuralNetwork:
             self.dedh = self.dednet[i, :] * self.dnetdhout
             
             self.dedhout = n.dedh.sum(1)
-            self.dedw1 += np.matmul(np.vstack(self.dedhout * self.dhoutdh[i, :]), self.dnetdw1[i, :]) 
+            self.dedw1 += np.matmul((self.dedhout * self.dhoutdh[i, :]).reshape(1, self.neurons), self.dnetdw1[i, :]) 
             #self.dedw1 = sum([np.matmul(np.vstack(self.dedhout * i), j) for i,j in zip(self.dhoutdh, self.dnetdw1)])
 
         self.delta_w1 = - self.gamma * self.dedw1
@@ -102,18 +105,18 @@ class NeuralNetwork:
         # calc new outputs
         self.forward()
         
-    def solve(self, e=1E-5):
+    def solve(self, e=1E-6):
         while self.change > e:
             self.backprop()
         print 'Solution found'
 
 if __name__ == '__main__':
-    #x = np.array([[0.05, 0.10]])
-    x = np.vstack(range(1, 5))
+    x = np.array([[0.05, 0.10]])
+    #x = np.vstack(range(1, 5))
     x.sort()
-    yact = 0.08 * x
-    #yact = np.array([[0.01, 0.99]])
-    #ymax = float(yact.max())
+    #yact = x ** 2
+    yact = np.array([[0.01, 0.99]])
+    ymax = float(yact.max())
     y = yact# / ymax
     n = NeuralNetwork(x, y)
     n.solve()
@@ -124,6 +127,7 @@ if __name__ == '__main__':
         print n.yact
         import matplotlib.pyplot as plt
         plt.plot(n.yact, n.y, '.')
+        plt.plot(np.linspace(0, 1), np.linspace(0, 1))
         plt.xlabel('Actual')
         plt.ylabel('Model')
         plt.show()

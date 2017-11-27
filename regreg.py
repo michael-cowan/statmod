@@ -4,20 +4,26 @@ import matplotlib.pyplot as plt
 import ols
 
 def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
-
+    bguess = np.array(bguess)
     # Add in alpha and lambda into variables of the loss function
-    terms = np.array(bguess.tolist() + [alpha, lam])
+    if const_alpha:
+        terms = np.array(bguess.tolist() + [alpha, lam])
+    else:
+        terms = bguess
 
     def loss(b):
         return (1 / (2. * len(x))) * ((func(x, b) - y)**2).sum()
 
-    def tot_func(terms):
-        b = terms[:-2]
-        alpha = terms[-2]
-        lam = terms[-1]
+    def tot_func(terms, alpha=alpha, lam=lam):
+        if not const_alpha:
+            b = terms[:-2]
+            alpha = terms[-2]
+            lam = terms[-1]
+        else:
+            b = terms
         bnorm = b.sum()
         bnorm2 = (b**2).sum()
-        return loss(b) + lam * ((alpha * bnorm) + ((1 - alpha) * bnorm2))
+        return (loss(b) + lam * ((alpha * bnorm) + ((1 - alpha) * bnorm2))).sum()
 
     # Constraints: 1 >= alpha >= 0, lambda >= 0
     cons = [{'type': 'ineq',
@@ -27,6 +33,9 @@ def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
             {'type': 'ineq',
              'fun': lambda x: x[-1]}
             ]
+
+    if const_alpha:
+        cons = None
 
     return minimize(tot_func, terms, constraints=cons)
 
@@ -39,7 +48,7 @@ def polyfunc(x, b):
 def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
     """
         Tests regularized regression fitting of points from
-        y = x^2 + 2x + 3 + (error)
+        y = 2x^2 + 3x + 4 + (error)
     """
     x = np.linspace(1, 5)
     y = polyfunc(x, testfuncb) + 5*np.random.random(len(x))
