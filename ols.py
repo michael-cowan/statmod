@@ -138,13 +138,13 @@ def ols(x, y, format='', show=True, name=''):
     return Solution(format, b, pval, r2, name)
 
 
-def ols_sing(x1, y, order=2, intercept=True, show=True, name=''):
+def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True):
     assert isinstance(x1, list) or isinstance(x1, np.ndarray)
     assert isinstance(y, list) or isinstance(y, np.ndarray)
     assert len(x1) == len(y)
     assert order >= 1
     
-    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(x2)
+    x = np.array([[1]*len(x1), x1]).T if intercept else np.vstack(x1)
     y = np.array(y)
     
     format = 'b, x1' if intercept else 'x1'
@@ -157,10 +157,10 @@ def ols_sing(x1, y, order=2, intercept=True, show=True, name=''):
 
     assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
 
-    return ols(x, y, format, show, name)
+    return ols(x, y, format, show, name) if return_ols else (x, format)
 
 
-def ols_multi(xi, y, order=2, pair_terms=True, intercept=True, show=True, name=''):
+def ols_multi(xi, y, order=2, pair_terms=True, intercept=True, show=True, name='', return_ols=True):
     assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
 
     # make sure xi and y are of type np.ndarray
@@ -209,7 +209,7 @@ def ols_multi(xi, y, order=2, pair_terms=True, intercept=True, show=True, name='
 
     #assert x.shape[1] < len(x)-1, "More data or a lower order is needed to complete OLS"
     
-    return ols(x, y, format, show, name)
+    return ols(x, y, format, show, name) if return_ols else (x, format)
 
 if __name__ == '__main__':
     x = np.random.random([500, 10])

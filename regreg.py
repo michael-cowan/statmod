@@ -6,7 +6,7 @@ import ols
 def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
     bguess = np.array(bguess)
     # Add in alpha and lambda into variables of the loss function
-    if const_alpha:
+    if not const_alpha:
         terms = np.array(bguess.tolist() + [alpha, lam])
     else:
         terms = bguess
