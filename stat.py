@@ -101,11 +101,15 @@ if 1:
 
     #sols.sort(key=lambda a: a.r2, reverse=True)
     #print '%i solutions were found with an R2 >= 0.8' % len(sols)
-for a in sols:
-    with open('Data\LinRegReg_2in.txt', 'a') as fid:
+
+hash = '\n' + '-' * 50 + '\n'
+func_desc = 'Function: (a * x1 * x2) + (b * x1^2) + (c * x2^2) + (d * x1) + (e * x2) + f'
+with open('Data\LinRegReg_2in.txt', 'w') as fid:
+    for a in sols:
+        fid.write('{0}{1}'.format(func_desc, hash))
         fid.write('RegType: {}\n'.format(a[3]))
         fid.write('Inputs: {}\n'.format(', '.join(a[1])))
         fid.write('Output: {}\n'.format(a[2]))
         for k in a[0]:
             fid.write('{0}: {1}\n'.format(k, str(a[0][k])))
-        fid.write('\n{}\n'.format('-'*50))
+        fid.write(hash)
