@@ -37,7 +37,31 @@ def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
     if const_alpha:
         cons = None
 
-    return minimize(tot_func, terms, constraints=cons)
+    sol = minimize(tot_func, terms, constraints=cons)
+    if sol.success:
+        bf = sol.x
+        if not const_alpha:
+            bf = bf[:-2]
+
+        # model output
+        y_mod = func(x, bf)
+        
+        # calc total sum of squares
+        tot_sos = ((y - y.mean())**2).sum()
+        
+        # calc regression sum of squares
+        resid_sos = ((y - y_mod)**2).sum()
+        reg_sos = tot_sos - resid_sos
+        
+        # calculate correlation coefficient, R2
+        r_sq = reg_sos / tot_sos
+        
+    else:
+        r_sq = 0
+
+    sol.r_sq = r_sq
+        
+    return sol
 
 def polyfunc(x, b):
     """
