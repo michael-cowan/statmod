@@ -12,7 +12,7 @@ class Solution:
                      'sum': 'pandas DataFrame summary of results',
                      'name': 'info on inputs being used',
                      'func': 'function to use model by passing in inputs',
-                     'resid': 'abs(residuals)'
+                     'resid': 'target - output'
                      }
 
         self.format = format
@@ -137,7 +137,7 @@ def ols(x, y, format='', show=True, name=''):
         print 'R^2: %s' % str(r2)
         print '_' * 100
 
-    return Solution(format, b, pval, r2, name, abs(resid))
+    return Solution(format, b, pval, r2, name, resid)
 
 
 def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True):

@@ -145,13 +145,13 @@ fig3.text(0.25, 0.75, 'R2 = %.3f' % elastic.r_sq)
 
 # residuals histograms
 #"""
-lasso_resid = f(lasso_x, lasso.x) - lasso_y
+lasso_resid = lasso_y - f(lasso_x, lasso.x)
 #lasso_resid /= lasso_resid.max()
 
-ridge_resid = f(ridge_x, ridge.x) - ridge_y
+ridge_resid = ridge_y - f(ridge_x, ridge.x)
 #ridge_resid /= ridge_resid.max()
 
-elastic_resid = f(elastic_x, elastic.x) - elastic_y
+elastic_resid = elastic_y - f(elastic_x, elastic.x)
 #elastic_resid /= elastic_resid.max()
 
 bins = 50.
