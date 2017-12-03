@@ -1,4 +1,6 @@
 clear all;
-data = csvread('Data\MLB_batting_statsML.csv', 2, 6);
-G_avg = data(:, [1, 20]).';
-H = data(:, 4).';
+main = csvread('Data\MLB_batting_statsML.csv', 2, 6);
+G_avg = main(:, [1, 20]).';
+H = main(:, 4).';
+
+cos = importCOS(4);
