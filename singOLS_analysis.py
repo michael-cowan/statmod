@@ -104,7 +104,7 @@ for o in [1, 2, 3]:
 
     a = single[0]
     xn,yn = a.name.split(': ')
-    if 0:
+    if 1:
         vals = bat[[xn, yn]].sort_values(xn).as_matrix()
         x = vals[:, 0]
         y = vals[:, 1]
@@ -112,7 +112,7 @@ for o in [1, 2, 3]:
 
 
         fig2, ax2 = plt.subplots()
-        ax2.bar(np.linspace(0, a.resid.max(), 50), h, color=colors[o], width=a.resid.max()/60.)
+        ax2.bar(np.linspace(b.min(), b.max(), 50), h, color=colors[o], width=a.resid.max()/60.)
         ax2.set_title('%s --> %s residuals; OLS' %(xn, yn))
         ax2.set_xlabel('Residual')
         ax2.set_ylabel('Frequency')
@@ -124,6 +124,7 @@ for o in [1, 2, 3]:
         yhat = np.poly1d(a.b)(x)
         fig3, ax3 = plt.subplots()
         ax3.plot(yhat, y, '.', color=colors[o])
+        ax3.plot(range(20, 181), range(20, 181), color='black')
         ax3.set_title('%s --> %s; OLS\nParity Plot' %(xn, yn))
         ax3.set_xlabel('Model %s' % yn)
         ax3.set_ylabel('Actual %s' % yn)

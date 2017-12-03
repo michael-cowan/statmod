@@ -41,14 +41,8 @@ bat['Rating'] /= bat['Max']
 bat = bat.drop('Max', 1)
 """
 
-def f(x1, x2):
-    ans = 6.423303 * x1 * x2
-    ans += -625.898839 * x2**2
-    ans += 0.018235 * x1**2
-    ans += 57.690117 * x2
-    ans += -5.892841 * x1
-    ans += 392.525936
-    return ans
+def f(x, e):
+    return e[0] * x[:, 0] * x[:, 1] + e[1] * x[:, 0]**2 + e[2] * x[:, 1] ** 2 + e[3] * x[:, 0] + e[4] * x[:, 1] + e[5]
 
 x = ['G', 'avg']
 y = 'H'
@@ -60,6 +54,18 @@ yval = tot.H.as_matrix()
 
 s2 = ols.ols_multi(xval, yval, order=2, pair_terms=True, intercept=True, show=False, name=', '.join(x) + ': ' + y)
 
+fig, ax = plt.subplots()
+
+ax.plot([s2.func(i) for i in xval], yval, '.', color='m')
+ax.set_xticks(range(70, 260, 20))
+ax.set_yticks(range(70, 260, 20))
+ax.plot(range(70, 251), range(70, 251), color='black')
+ax.set_xlabel('Model')
+ax.set_ylabel('Actual')
+ax.set_title('Multivariate OLS\nParity Plot')
+
+
+"""
 x1 = np.linspace(xval[:, 0].min(), xval[:, 0].max())
 x2 = np.linspace(xval[:, 1].min(), xval[:, 1].max())
 X, Y = np.meshgrid(x1, x2)
@@ -75,7 +81,7 @@ ax.set_ylabel('avg', fontsize=14)
 ax.set_zlabel('H', fontsize=14)
 ax.set_title('Best Fit Multivariate OLS')
 fig.text(0.25, 0.75, 'R2 = %.3f' % s2.r2)
-
+"""
 
 def make_str(o):
     n = 97
