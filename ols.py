@@ -4,14 +4,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 class Solution:
-    def __init__(self, format, b, pval, r2, name):
+    def __init__(self, format, b, pval, r2, name, resid):
         self.info = {'format': 'string representation of model',
                      'b': 'model coefficients',
                      'pval': 'p distribution numbers',
                      'r2': 'correlation coefficient (R^2)',
                      'sum': 'pandas DataFrame summary of results',
                      'name': 'info on inputs being used',
-                     'func': 'function to use model by passing in inputs'
+                     'func': 'function to use model by passing in inputs',
+                     'resid': 'abs(residuals)'
                      }
 
         self.format = format
@@ -19,6 +20,7 @@ class Solution:
         self.pval = pval
         self.r2 = r2
         self.name = name
+        self.resid = resid
         if format:
             self.sum = pd.DataFrame({'Format': self.format.split(', '),
                                     'Coefficient': self.b.T.tolist()[0],
@@ -135,7 +137,7 @@ def ols(x, y, format='', show=True, name=''):
         print 'R^2: %s' % str(r2)
         print '_' * 100
 
-    return Solution(format, b, pval, r2, name)
+    return Solution(format, b, pval, r2, name, abs(resid))
 
 
 def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True):
