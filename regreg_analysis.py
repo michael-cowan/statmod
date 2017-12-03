@@ -1,13 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import ols
-import regreg
-import neural
-import itertools
-
-import numpy as np
-import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import ols
 import regreg
@@ -63,8 +56,48 @@ elastic_x = bat[['H', 'RBI']].as_matrix().flatten()
 elastic_y = bat['HR'].as_matrix()
 
 lasso = regreg.elastic_net(f, lasso_x, lasso_y, bguess, 1.0, 0.1, True)
+lasso.alpha = 1
+lasso.color = 'g'
+lasso.typ = 'LASSO'
+lasso.xn = 'HR'
+lasso.yn = 'SO'
+lasso.zn = 'RBI'
+
 ridge = regreg.elastic_net(f, ridge_x, ridge_y, bguess, 0, 0.1, True)
+ridge.alpha = 0
+ridge.color = 'b'
+ridge.typ = 'Ridge'
+ridge.xn = 'G'
+ridge.yn = 'H'
+ridge.zn = 'AB'
+
 elastic = regreg.elastic_net(f, elastic_x, elastic_y, bguess, 0.5, 0.1, True)
+elastic.alpha = 0.5
+elastic.color = 'c'
+elastic.typ = 'Elastic'
+elastic.xn = 'H'
+elastic.yn = 'RBI'
+elastic.zn = 'HR'
+
+# surface plots
+def srf(x, y, reg):
+    x = x.reshape(len(x)/2, 2)
+    x1 = x[:, 0]
+    x2 = x[:, 1]
+    X, Y = np.meshgrid(np.linspace(x1.min(), x1.max()), np.linspace(x2.min(), x2.max()))
+    Z = np.array([f(np.array([i, j]), reg.x) for i,j in zip(X.ravel(), Y.ravel())]).reshape(X.shape)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(X, Y, Z, color='gray')
+    ax.plot(x1, x2, y, '.', color=reg.color, alpha=0.25)
+    ax.set_xlabel(reg.xn, fontsize=14)
+    ax.set_ylabel(reg.yn, fontsize=14)
+    ax.set_zlabel(reg.zn, fontsize=14)
+    ax.set_title('Best Fit %s Regression\nalpha = %.1f' %(reg.typ, reg.alpha))
+    fig.text(0.25, 0.75, 'R2 = %.3f' % reg.r_sq)
+    
+    return fig, ax
+
 
 # parity plots
 """
