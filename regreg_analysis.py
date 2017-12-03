@@ -145,13 +145,13 @@ fig3.text(0.25, 0.75, 'R2 = %.3f' % elastic.r_sq)
 
 # residuals histograms
 #"""
-lasso_resid = abs(f(lasso_x, lasso.x) - lasso_y)
+lasso_resid = f(lasso_x, lasso.x) - lasso_y
 #lasso_resid /= lasso_resid.max()
 
-ridge_resid = abs(f(ridge_x, ridge.x) - ridge_y)
+ridge_resid = f(ridge_x, ridge.x) - ridge_y
 #ridge_resid /= ridge_resid.max()
 
-elastic_resid = abs(f(elastic_x, elastic.x) - elastic_y)
+elastic_resid = f(elastic_x, elastic.x) - elastic_y
 #elastic_resid /= elastic_resid.max()
 
 bins = 50.
@@ -161,21 +161,21 @@ elastic_hist, b3 = np.histogram(elastic_resid, bins=bins)
 
 fig1, ax1 = plt.subplots()
 ax1.set_title('HR, SO --> RBI residuals; LASSO Regression\nalpha = %.1f' % lasso.alpha)
-ax1.bar(np.linspace(0, lasso_resid.max(), bins), lasso_hist, color='g', width=lasso_resid.max()/(bins+10))
+ax1.bar(np.linspace(b1.min(), b1.max(), bins), lasso_hist, color='g', width=lasso_resid.max()/(bins+10))
 ax1.set_xlabel('Residual')
 ax1.set_ylabel('Frequency')
 fig1.text(0.75, 0.75, 'R2 = %.3f' % lasso.r_sq)
 
 fig2, ax2 = plt.subplots()
 ax2.set_title('G, H --> AB residuals; Ridge Regression\nalpha = %.1f' % ridge.alpha)
-ax2.bar(np.linspace(0, ridge_resid.max(), bins), ridge_hist, color='b', width=ridge_resid.max()/(bins+10))
+ax2.bar(np.linspace(b2.min(), b2.max(), bins), ridge_hist, color='b', width=ridge_resid.max()/(bins+10))
 ax2.set_xlabel('Residual')
 ax2.set_ylabel('Frequency')
 fig2.text(0.75, 0.75, 'R2 = %.3f' % ridge.r_sq)
 
 fig3, ax3 = plt.subplots()
 ax3.set_title('H, RBI --> HR residuals; Elastic Net Regression\nalpha = %.1f' % elastic.alpha)
-ax3.bar(np.linspace(0, elastic_resid.max(), bins), elastic_hist, color='c', width=elastic_resid.max()/(bins+10))
+ax3.bar(np.linspace(b3.min(), b3.max(), bins), elastic_hist, color='c', width=elastic_resid.max()/(bins+10))
 ax3.set_xlabel('Residual')
 ax3.set_ylabel('Frequency')
 fig3.text(0.75, 0.75, 'R2 = %.3f' % elastic.r_sq)
