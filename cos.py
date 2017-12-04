@@ -41,6 +41,6 @@ def make_df(prev=3):
                     df = df.append(row, ignore_index=True)
     return df
 
-for p in xrange(1, 11):
+for p in xrange(2, 11):
     df = make_df(p)
     df.to_csv('Data\COS_prev%i.csv' % p, index=False)
