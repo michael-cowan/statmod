@@ -62,6 +62,7 @@ ax.set_yticks(range(70, 260, 20))
 ax.plot(range(70, 251), range(70, 251), color='black')
 ax.set_xlabel('Model')
 ax.set_ylabel('Actual')
+fig.text(0.25, 0.75, 'R2 = %.3f' % s2.r2)
 ax.set_title('Multivariate OLS\nParity Plot')
 
 

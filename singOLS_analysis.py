@@ -104,7 +104,7 @@ for o in [1, 2, 3]:
 
     a = single[0]
     xn,yn = a.name.split(': ')
-    if 1:
+    if 0:
         vals = bat[[xn, yn]].sort_values(xn).as_matrix()
         x = vals[:, 0]
         y = vals[:, 1]
