@@ -8,6 +8,7 @@ import neural
 import itertools
 
 """
+TEST
 3.1 Plate appearances per team game to qualify
     PA = (AB + BB) / 162
 Only AL & NL leagues
