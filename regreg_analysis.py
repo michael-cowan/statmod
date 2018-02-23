@@ -94,7 +94,7 @@ def srf(x, y, reg):
     ax.set_ylabel(reg.yn, fontsize=14)
     ax.set_zlabel(reg.zn, fontsize=14)
     ax.set_title('Best Fit %s Regression\nalpha = %.1f' %(reg.typ, reg.alpha))
-    fig.text(0.25, 0.75, 'R2 = %.3f' % reg.r_sq)
+    fig.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(reg.r_sq, reg.mse))
     
     return fig, ax
 
@@ -118,7 +118,7 @@ ax1.set_xlabel('Model RBI')
 ax1.set_ylabel('Actual RBI')
 ax1.set_xticks(lasso_r)
 ax1.set_yticks(lasso_r)
-fig1.text(0.25, 0.75, 'R2 = %.3f' % lasso.r_sq)
+fig1.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(lasso.r_sq, lasso.mse))
 
 fig2, ax2 = plt.subplots()
 ax2.set_title('G, H --> AB; Ridge Regression\nParity Plot (alpha = %.1f)' % ridge.alpha)
@@ -128,7 +128,7 @@ ax2.set_xlabel('Model AB')
 ax2.set_ylabel('Actual AB')
 ax2.set_xticks(ridge_r)
 ax2.set_yticks(ridge_r)
-fig2.text(0.25, 0.75, 'R2 = %.3f' % ridge.r_sq)
+fig2.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(ridge.r_sq, ridge.mse))
 
 fig3, ax3 = plt.subplots()
 ax3.set_title('H, RBI --> HR; Elastic Net Regression\nParity Plot (alpha = %.1f)' % elastic.alpha)
@@ -138,7 +138,7 @@ ax3.set_xlabel('Model HR')
 ax3.set_ylabel('Actual HR')
 ax3.set_xticks(elastic_r)
 ax3.set_yticks(elastic_r)
-fig3.text(0.25, 0.75, 'R2 = %.3f' % elastic.r_sq)
+fig3.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(elastic.r_sq, elastic.mse))
 
 [f5.savefig('%s_Parity.png' % t, dpi=200) for f5, t in zip([fig1, fig2, fig3], ['LASSO', 'Ridge', 'Elastic'])]
 #"""
@@ -164,21 +164,21 @@ ax1.set_title('HR, SO --> RBI residuals; LASSO Regression\nalpha = %.1f' % lasso
 ax1.bar(np.linspace(b1.min(), b1.max(), bins), lasso_hist, color='g', width=lasso_resid.max()/(bins+10))
 ax1.set_xlabel('Residual')
 ax1.set_ylabel('Frequency')
-fig1.text(0.75, 0.75, 'R2 = %.3f' % lasso.r_sq)
+fig1.text(0.75, 0.75, 'R2 = %.3f\nMSE = %.1f' %(lasso.r_sq, lasso.mse))
 
 fig2, ax2 = plt.subplots()
 ax2.set_title('G, H --> AB residuals; Ridge Regression\nalpha = %.1f' % ridge.alpha)
 ax2.bar(np.linspace(b2.min(), b2.max(), bins), ridge_hist, color='b', width=ridge_resid.max()/(bins+10))
 ax2.set_xlabel('Residual')
 ax2.set_ylabel('Frequency')
-fig2.text(0.75, 0.75, 'R2 = %.3f' % ridge.r_sq)
+fig2.text(0.75, 0.75, 'R2 = %.3f\nMSE = %.1f' %(ridge.r_sq, ridge.mse))
 
 fig3, ax3 = plt.subplots()
 ax3.set_title('H, RBI --> HR residuals; Elastic Net Regression\nalpha = %.1f' % elastic.alpha)
 ax3.bar(np.linspace(b3.min(), b3.max(), bins), elastic_hist, color='c', width=elastic_resid.max()/(bins+10))
 ax3.set_xlabel('Residual')
 ax3.set_ylabel('Frequency')
-fig3.text(0.75, 0.75, 'R2 = %.3f' % elastic.r_sq)
+fig3.text(0.75, 0.75, 'R2 = %.3f\nMSE = %.1f' %(elastic.r_sq, elastic.mse))
 
 fig1.savefig('LASSO_Resids.png', dpi=200)
 fig2.savefig('Ridge_Resids.png', dpi=200)

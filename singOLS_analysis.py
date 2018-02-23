@@ -98,6 +98,7 @@ for o in [1, 2, 3]:
     ax.set_title('Single Variable OLS\n%s' %(make_str(o)))
     ax.set_xlabel('Regressions')
     ax.set_ylabel('R2')
+    fig.text(0.5, 0.75, 'R2 max  = %.2f\nMSE max = %.1f' %(single[0].r2, single[0].mse))
 
     fig.savefig('SingleOLS_Reg%i.png' % o, dpi=200)
 
@@ -116,7 +117,7 @@ for o in [1, 2, 3]:
         ax2.set_title('%s --> %s residuals; OLS' %(xn, yn))
         ax2.set_xlabel('Residual')
         ax2.set_ylabel('Frequency')
-        fig2.text(0.75, 0.75, 'R2 = %.3f' % a.r2)
+        fig2.text(0.75, 0.75, 'R2  = %.3f\nMSE = %.1f' %(a.r2, a.mse))
 
         fig2.savefig('SingleOLS_Resids%i.png' % o, dpi=200)
 
@@ -130,7 +131,7 @@ for o in [1, 2, 3]:
         ax3.set_ylabel('Actual %s' % yn)
         ax3.set_xticks(range(20, 180, 20))
         ax3.set_yticks(range(20, 180, 20))
-        fig3.text(0.25, 0.75, 'R2 = %.3f' % a.r2)
+        fig3.text(0.25, 0.75, 'R2  = %.3f\nMSE = %.1f' %(a.r2, a.mse))
 
         fig3.savefig('SingleOLS_Parity%i.png' % o, dpi=200)
 
@@ -142,6 +143,6 @@ for o in [1, 2, 3]:
         ax4.set_ylabel(yn)
         ax4.plot(x, yhat, color='black')
         ax4.legend(['Data', 'OLS Fit'])
-        fig4.text(0.75, 0.25, 'R2 = %.3f' % a.r2)
+        fig4.text(0.75, 0.25, 'R2  = %.3f\nMSE = %.1f' %(a.r2, a.mse))
 
         fig4.savefig('SingleOLS_Plot%i.png' % o, dpi=200)

@@ -60,11 +60,12 @@ ax.plot([s2.func(i) for i in xval], yval, '.', color='m')
 ax.set_xticks(range(70, 260, 20))
 ax.set_yticks(range(70, 260, 20))
 ax.plot(range(70, 251), range(70, 251), color='black')
-ax.set_xlabel('Model')
-ax.set_ylabel('Actual')
-fig.text(0.25, 0.75, 'R2 = %.3f' % s2.r2)
-ax.set_title('Multivariate OLS\nParity Plot')
+ax.set_xlabel('Model H')
+ax.set_ylabel('Actual H')
+fig.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(s2.r2, s2.mse))
+ax.set_title('G, avg --> H; Multivariate OLS\nParity Plot')
 
+fig.savefig('MultiOLS_Parity.png', dpi=200)
 
 """
 x1 = np.linspace(xval[:, 0].min(), xval[:, 0].max())
@@ -146,39 +147,41 @@ if 0:
     ax.set_title('Multivariate OLS\ny = (a * x2 * x1) + (b * x2^2) + (c * x1^2) + (d * x2) + (e * x1) + f')
     ax.set_xlabel('Regressions')
     ax.set_ylabel('R2')
+    fig.text(0.5, 0.75, 'R2 max = %.3f\nMSE max = %.1f' %(single[0].r2, single[0].mse))
 
     fig.savefig('MultiOLS_Reg.png', dpi=200)
 
 
+    
     a = single[0]
     xn,yn = a.name.split(': ')
+
+    vals = bat[xn.split(', ') + [yn]].sort_values('G').as_matrix()
+    x = vals[:, 0]
+    y = vals[:, 1]
+    h, b = np.histogram(a.resid, bins=50.)
+
+    fig2, ax2 = plt.subplots()
+    ax2.bar(np.linspace(a.resid.min(), a.resid.max(), 50), h, color=colors[o], width=a.resid.max()/60.)
+    ax2.set_title('%s --> %s residuals; Multivariate OLS' %(xn, yn))
+    ax2.set_xlabel('Residuals')
+    ax2.set_ylabel('Frequency')
+    fig2.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(a.r2, a.mse))
+
+    fig2.savefig('MultiOLS_Resids.png', dpi=200)
+
     if 0:
-        vals = bat[[xn, yn]].sort_values(xn).as_matrix()
-        x = vals[:, 0]
-        y = vals[:, 1]
-        h, b = np.histogram(a.resid, bins=50.)
-
-        fig2, ax2 = plt.subplots()
-        ax2.bar(np.linspace(0, a.resid.max(), 50), h, color=colors[o], width=a.resid.max()/60.)
-        ax2.set_title('%s --> %s residuals; OLS' %(xn, yn))
-        ax2.set_xlabel('Residual')
-        ax2.set_ylabel('Frequency')
-        fig2.text(0.75, 0.75, 'R2 = %.3f' % a.r2)
-
-        fig2.savefig('SingleOLS_Resids%i.png' % o, dpi=200)
-
-
         yhat = np.poly1d(a.b)(x)
         fig3, ax3 = plt.subplots()
-        ax3.plot(yhat, y, '.', color=colors[o])
+        ax3.plot(y - a.resid, y, '.', color=colors[o])
         ax3.set_title('%s --> %s; OLS\nParity Plot' %(xn, yn))
         ax3.set_xlabel('Model %s' % yn)
         ax3.set_ylabel('Actual %s' % yn)
-        ax3.set_xticks(range(20, 180, 20))
-        ax3.set_yticks(range(20, 180, 20))
-        fig3.text(0.25, 0.75, 'R2 = %.3f' % a.r2)
+        ax3.set_xticks(range(70, 270, 20))
+        ax3.set_yticks(range(70, 270, 20))
+        fig3.text(0.25, 0.75, 'R2 = %.3f\nMSE = %.1f' %(a.r2, a.mse))
 
-        fig3.savefig('SingleOLS_Parity%i.png' % o, dpi=200)
+        fig3.savefig('MultiOLS_Parity.png', dpi=200)
 
 
         fig4, ax4 = plt.subplots()

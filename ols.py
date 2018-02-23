@@ -4,11 +4,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 class Solution:
-    def __init__(self, format, b, pval, r2, name, resid):
+    def __init__(self, format, b, pval, r2, mse, name, resid):
         self.info = {'format': 'string representation of model',
                      'b': 'model coefficients',
                      'pval': 'p distribution numbers',
                      'r2': 'correlation coefficient (R^2)',
+                     'mse': 'mean square error',
                      'sum': 'pandas DataFrame summary of results',
                      'name': 'info on inputs being used',
                      'func': 'function to use model by passing in inputs',
@@ -19,6 +20,7 @@ class Solution:
         self.b = b
         self.pval = pval
         self.r2 = r2
+        self.mse = mse
         self.name = name
         self.resid = resid
         if format:
@@ -81,6 +83,9 @@ def ols(x, y, format='', show=True, name=''):
     resid = y - y_est
     resid_sq = resid**2
 
+    # mean square error
+    mse = resid_sq.mean()
+
     # residual sum of squares
     resid_sos = resid_sq.sum()
 
@@ -137,7 +142,7 @@ def ols(x, y, format='', show=True, name=''):
         print 'R^2: %s' % str(r2)
         print '_' * 100
 
-    return Solution(format, b, pval, r2, name, resid)
+    return Solution(format, b, pval, r2, mse, name, resid)
 
 
 def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True):

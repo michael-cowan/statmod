@@ -60,6 +60,8 @@ def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
         r_sq = 0
 
     sol.r_sq = r_sq
+    sol.resid = y - y_mod
+    sol.mse = (sol.resid**2).mean()
         
     return sol
 
