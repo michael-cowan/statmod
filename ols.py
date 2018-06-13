@@ -74,7 +74,7 @@ def ols(x, y, format='', show=True, name=''):
     except Exception as e:
         if show:
             print e
-        return Solution('', np.array([]), np.array([]), 0, str(e))
+        return Solution('', np.array([]), np.array([]), 0, 0, str(e), np.array([]))
 
     # estimates
     y_est = np.array([np.dot(x[i, :], b) for i in xrange(len(x[:, 0]))])
@@ -136,6 +136,7 @@ def ols(x, y, format='', show=True, name=''):
     pval = pval[::-1]
 
     if show:
+        print 'Name:\n%s\n' % name
         print 'Format:\n%s\n' % format
         print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b]) 
         print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
