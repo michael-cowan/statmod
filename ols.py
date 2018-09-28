@@ -3,6 +3,7 @@ from scipy import stats
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 class Solution:
     def __init__(self, format, b, pval, r2, mse, name, resid):
         self.info = {'format': 'string representation of model',
@@ -25,7 +26,7 @@ class Solution:
         self.resid = resid
         if format:
             self.sum = pd.DataFrame({'Format': self.format.split(', '),
-                                    'Coefficient': self.b.T.tolist()[0],
+                                    'Coefficient': self.b.T.tolist(),
                                     'PValue': self.pval.tolist()
                                     })[['Format', 'Coefficient', 'PValue']]
         else:
@@ -59,6 +60,21 @@ class Solution:
         print 'P Values:\n%s\n' % ', '.join([str(i) for i in self.pval])
         print 'R^2: %s' % str(self.r2)
         print '_' * 100
+
+
+def fit(x, y, order=2, intercept=True, pair_terms=False, show=True,
+        name='', return_ols=True):
+    # make sure xi and y are of type np.ndarray
+    for z in [x, y]:
+        if not (isinstance(z, list) or isinstance(z, np.ndarray)):
+            raise TypeError("Inputs must be a list or array")
+    x = np.array(x)
+    if len(x.shape) == 1:
+        return ols_sing(x, y, order, intercept, show, name, return_ols)
+    else:
+        return ols_multi(x, y, order, intercept, pair_terms,
+                         show, name, return_ols)
+
 
 def ols(x, y, format='', show=True, name=''):
     # average y from data
@@ -132,7 +148,10 @@ def ols(x, y, format='', show=True, name=''):
 
     # Reverse format, b, & pval such that its order matches np.poly1d
     format = ', '.join(format.replace(',', '').split()[::-1])
-    b = b[::-1]
+    if len(b.shape) == 1:
+        b = b[::-1]
+    else:
+        b = np.array([i[0] for i in b[::-1]])
     pval = pval[::-1]
 
     if show:
@@ -146,7 +165,8 @@ def ols(x, y, format='', show=True, name=''):
     return Solution(format, b, pval, r2, mse, name, resid)
 
 
-def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True):
+def ols_sing(x1, y, order=2, intercept=True, show=True, name='',
+             return_ols=True):
     assert isinstance(x1, list) or isinstance(x1, np.ndarray)
     assert isinstance(y, list) or isinstance(y, np.ndarray)
     assert len(x1) == len(y)
@@ -168,15 +188,14 @@ def ols_sing(x1, y, order=2, intercept=True, show=True, name='', return_ols=True
     return ols(x, y, format, show, name) if return_ols else (x, format)
 
 
-def ols_multi(xi, y, order=2, pair_terms=True, intercept=True, show=True, name='', return_ols=True):
+def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
+              name='', return_ols=True):
     assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
 
     # make sure xi and y are of type np.ndarray
     for z in [xi, y]:
         if not (isinstance(z, list) or isinstance(z, np.ndarray)):
-            raise TypeError("Inputs must be a list or 1D array")
-        if len(z) < order:
-            raise ValueError("Not enough data points to solve OLS with order = %i") % order
+            raise TypeError("Inputs must be a list or array")
 
     xi = np.array(xi)
     y = np.vstack(y)
