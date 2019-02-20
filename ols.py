@@ -11,7 +11,7 @@ class Solution:
                      'pval': 'p distribution numbers',
                      'r2': 'correlation coefficient (R^2)',
                      'mse': 'mean square error',
-                     'sum': 'pandas DataFrame summary of results',
+                     'summ': 'pandas DataFrame summary of results',
                      'name': 'info on inputs being used',
                      'func': 'function to use model by passing in inputs',
                      'resid': 'target - output'
@@ -33,6 +33,8 @@ class Solution:
             self.summ = pd.DataFrame()
 
     def __calc_row__(self, row, xin):
+        if type(xin) in [int, float]:
+            xin = [xin]
         n_ls = row.Format.replace('x', '').split('*')
         sol = row.Coefficient
         if row.Format == 'b':
