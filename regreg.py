@@ -3,6 +3,7 @@ from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 import ols
 
+
 def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
     bguess = np.array(bguess)
     # Add in alpha and lambda into variables of the loss function
@@ -45,31 +46,33 @@ def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
 
         # model output
         y_mod = func(x, bf)
-        
+
         # calc total sum of squares
         tot_sos = ((y - y.mean())**2).sum()
-        
+
         # calc regression sum of squares
         resid_sos = ((y - y_mod)**2).sum()
         reg_sos = tot_sos - resid_sos
-        
+
         # calculate correlation coefficient, R2
         r_sq = reg_sos / tot_sos
-        
+
     else:
         r_sq = 0
 
     sol.r_sq = r_sq
     sol.resid = y - y_mod
     sol.mse = (sol.resid**2).mean()
-        
+
     return sol
+
 
 def polyfunc(x, b):
     """
         y = (b0)x^N + (b1)x^(N-1) + ... + bN
     """
     return np.poly1d(b)(x)
+
 
 def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
     """

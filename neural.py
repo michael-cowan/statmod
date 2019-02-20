@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class NeuralNetwork:
     def __init__(self, inputs, outputs, neurons=2):
         # input matrix
