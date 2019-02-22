@@ -197,7 +197,7 @@ def ols_sing(x1, y, order=2, intercept=True, show=True, name='',
 
 def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
               name='', return_ols=True):
-    assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
+    # assert 1 <= order <= 2, "Only implemented to handle orders 1 and 2"
 
     # make sure xi and y are of type np.ndarray
     for z in [xi, y]:
@@ -219,7 +219,7 @@ def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
     # add intercept
     if intercept:
         form += 'b '
-        x = np.vstack([1]*len(xi))
+        x = np.vstack([1] * len(xi))
         xmade = True
 
     # add in first order inputs to format & x
@@ -229,27 +229,35 @@ def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
     else:
         x = xi.copy()
 
-    # add second order terms
-    if order == 2:
-        form += ', ' + ', '.join(['x' + str(j+1) + '^2'
-                                  for j in xrange(xi.shape[1])])
-        x = np.concatenate((x, xi**2), axis=1)
+    # add higher order terms
+    if order > 1:
+        for o in xrange(2, order + 1):
+            form += ', ' + ', '.join(['x' + str(j+1) + '^%i' % o
+                                      for j in xrange(xi.shape[1])])
+            x = np.concatenate((x, xi ** o), axis=1)
 
-    # add pair terms
-    if pair_terms:
-        for z1 in xrange(1, xi.shape[1]):
-            for z2 in xrange(z1+1, xi.shape[1]+1):
-                form += ', x%i*x%i' % (z1, z2)
-                x = np.concatenate((x, np.vstack(x[:, z1] * x[:, z2])), axis=1)
+        # add pair terms
+        if pair_terms:
+            for z1 in xrange(1, xi.shape[1]):
+                for z2 in xrange(z1+1, xi.shape[1]+1):
+                    form += ', x%i*x%i' % (z1, z2)
+                    x = np.concatenate((x, np.vstack(x[:, z1] * x[:, z2])),
+                                       axis=1)
 
     return ols(x, y, form, show, name) if return_ols else (x, form)
 
 if __name__ == '__main__':
-    import time
     x = np.random.random([500, 10])
     y = x.sum(axis=1)
 
-    sol = ols_multi(x, y, 2)
+    sol = fit(x, y, 3)
 
     z = [23, 22, 2, 34, 6, 322, 4, 65, 345, 432]
     ans = sol.func(z)
+
+    f, a = plt.subplots()
+    a.plot([y.min(), y.max()], [y.min(), y.max()], color='k')
+    for i in xrange(len(y)):
+        a.plot(y[i], x[i], 'o', color='r')
+
+    f.show()
