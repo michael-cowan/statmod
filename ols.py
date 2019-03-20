@@ -54,12 +54,12 @@ class Solution:
 
     def show(self):
         if self.name:
-            print 'Name: "%s"\n' % self.name
-        print 'form:\n%s\n' % self.form
-        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in self.b])
-        print 'P Values:\n%s\n' % ', '.join([str(i) for i in self.pval])
-        print 'R^2: %s' % str(self.r2)
-        print '_' * 100
+            print('Name: "%s"\n' % self.name)
+        print('form:\n%s\n' % self.form)
+        print('coefficients:\n%s\n' % ', '.join([str(i) for i in self.b]))
+        print('P Values:\n%s\n' % ', '.join([str(i) for i in self.pval]))
+        print('R^2: %s' % str(self.r2))
+        print('_' * 100)
 
 
 def fit(x, y, order=2, intercept=True, pair_terms=False, show=True,
@@ -89,7 +89,7 @@ def ols(x, y, form='', show=True, name=''):
         b = np.dot(np.linalg.pinv(x), y)
     except Exception as e:
         if show:
-            print e
+            print(e)
         return Solution('', np.array([]),
                         np.array([]), 0,
                         0, str(e),
@@ -160,12 +160,12 @@ def ols(x, y, form='', show=True, name=''):
     pval = pval[::-1]
 
     if show:
-        print 'Name:\n%s\n' % name
-        print 'Format:\n%s\n' % form
-        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b])
-        print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
-        print 'R^2: %s' % str(r2)
-        print '_' * 100
+        print('Name:\n%s\n' % name)
+        print('Format:\n%s\n' % form)
+        print('coefficients:\n%s\n' % ', '.join([str(i) for i in b]))
+        print('P Values:\n%s\n' % ', '.join([str(i) for i in pval]))
+        print('R^2: %s' % str(r2))
+        print('_' * 100)
 
     return Solution(form, b, pval, r2, mse, name, resid)
 
