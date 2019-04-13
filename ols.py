@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 
 
 class Solution:
-    def __init__(self, form, b, pval, r2, mse, name, resid):
+    def __init__(self, form, b, pval, r2, name, resid):
         self.info = {'form': 'string representation of model',
                      'b': 'model coefficients',
                      'pval': 'p distribution numbers',
                      'r2': 'correlation coefficient (R^2)',
+                     'mae': 'mean absolute error',
                      'mse': 'mean square error',
                      'summ': 'pandas DataFrame summary of results',
                      'name': 'info on inputs being used',
@@ -21,9 +22,10 @@ class Solution:
         self.b = b
         self.pval = pval
         self.r2 = r2
-        self.mse = mse
         self.name = name
         self.resid = resid
+        self.mae = abs(resid).mean()
+        self.mse = (resid**2).mean()
         if form:
             self.summ = pd.DataFrame({'Format': self.form.split(', '),
                                       'Coefficient': self.b.T.tolist(),
@@ -54,12 +56,12 @@ class Solution:
 
     def show(self):
         if self.name:
-            print 'Name: "%s"\n' % self.name
-        print 'form:\n%s\n' % self.form
-        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in self.b])
-        print 'P Values:\n%s\n' % ', '.join([str(i) for i in self.pval])
-        print 'R^2: %s' % str(self.r2)
-        print '_' * 100
+            print('Name: "%s"\n' % self.name)
+        print('form:\n%s\n' % self.form)
+        print('coefficients:\n%s\n' % ', '.join([str(i) for i in self.b]))
+        print('P Values:\n%s\n' % ', '.join([str(i) for i in self.pval]))
+        print('R^2: %s' % str(self.r2))
+        print('_' * 100)
 
 
 def fit(x, y, order=2, intercept=True, pair_terms=False, show=True,
@@ -89,14 +91,14 @@ def ols(x, y, form='', show=True, name=''):
         b = np.dot(np.linalg.pinv(x), y)
     except Exception as e:
         if show:
-            print e
+            print(e)
         return Solution('', np.array([]),
                         np.array([]), 0,
                         0, str(e),
                         np.array([]))
 
     # estimates
-    y_est = np.array([np.dot(x[i, :], b) for i in xrange(len(x[:, 0]))])
+    y_est = np.array([np.dot(x[i, :], b) for i in range(len(x[:, 0]))])
 
     # residuals
     resid = y - y_est
@@ -104,6 +106,7 @@ def ols(x, y, form='', show=True, name=''):
 
     # mean square error
     mse = resid_sq.mean()
+    mae = abs(resid).mean()
 
     # residual sum of squares
     resid_sos = resid_sq.sum()
@@ -160,14 +163,14 @@ def ols(x, y, form='', show=True, name=''):
     pval = pval[::-1]
 
     if show:
-        print 'Name:\n%s\n' % name
-        print 'Format:\n%s\n' % form
-        print 'coefficients:\n%s\n' % ', '.join([str(i) for i in b])
-        print 'P Values:\n%s\n' % ', '.join([str(i) for i in pval])
-        print 'R^2: %s' % str(r2)
-        print '_' * 100
+        print('Name:\n%s\n' % name)
+        print('Format:\n%s\n' % form)
+        print('coefficients:\n%s\n' % ', '.join([str(i) for i in b]))
+        print('P Values:\n%s\n' % ', '.join([str(i) for i in pval]))
+        print('R^2: %s' % str(r2))
+        print('_' * 100)
 
-    return Solution(form, b, pval, r2, mse, name, resid)
+    return Solution(form=form, b=b, pval=pval, r2=r2, name=name, resid=resid)
 
 
 def ols_sing(x1, y, order=2, intercept=True, show=True, name='',
@@ -184,7 +187,7 @@ def ols_sing(x1, y, order=2, intercept=True, show=True, name='',
 
     if order > 1:
         x1 = np.vstack(x1)
-        for i in xrange(2, order+1):
+        for i in range(2, order+1):
             x = np.concatenate((x, x1**i), axis=1)
             form += ', x1^%i' % i
 
@@ -223,7 +226,7 @@ def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
         xmade = True
 
     # add in first order inputs to format & x
-    form += ', '.join(['x' + str(i+1) for i in xrange(xi.shape[1])])
+    form += ', '.join(['x' + str(i+1) for i in range(xi.shape[1])])
     if xmade:
         x = np.concatenate((x, xi), axis=1)
     else:
@@ -231,15 +234,15 @@ def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
 
     # add higher order terms
     if order > 1:
-        for o in xrange(2, order + 1):
+        for o in range(2, order + 1):
             form += ', ' + ', '.join(['x' + str(j+1) + '^%i' % o
-                                      for j in xrange(xi.shape[1])])
+                                      for j in range(xi.shape[1])])
             x = np.concatenate((x, xi ** o), axis=1)
 
         # add pair terms
         if pair_terms:
-            for z1 in xrange(1, xi.shape[1]):
-                for z2 in xrange(z1+1, xi.shape[1]+1):
+            for z1 in range(1, xi.shape[1]):
+                for z2 in range(z1+1, xi.shape[1]+1):
                     form += ', x%i*x%i' % (z1, z2)
                     x = np.concatenate((x, np.vstack(x[:, z1] * x[:, z2])),
                                        axis=1)
@@ -257,7 +260,7 @@ if __name__ == '__main__':
 
     f, a = plt.subplots()
     a.plot([y.min(), y.max()], [y.min(), y.max()], color='k')
-    for i in xrange(len(y)):
+    for i in range(len(y)):
         a.plot(y[i], x[i], 'o', color='r')
 
     f.show()

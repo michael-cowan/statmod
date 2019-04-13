@@ -73,15 +73,16 @@ class NeuralNetwork:
     def backprop(self):
         # solve for dedw2
         self.dedy = self.y - self.yact
-            
+
         self.dydnet = self.y * (1 - self.y)
-        
+
         self.dednet = (self.dedy * self.dydnet)
-            
+
         self.dnetdw2 = self.hout
-        
-        self.dedw2 = sum([i * np.vstack(j) for i,j in zip(self.dednet, self.dnetdw2)])
-        
+
+        self.dedw2 = sum([i * np.vstack(j) for i, j in zip(self.dednet,
+                                                           self.dnetdw2)])
+
         # solve for dedw1
         self.dedw1 = np.zeros(self.w1.shape)
         self.dnetdhout = self.w2
@@ -89,10 +90,10 @@ class NeuralNetwork:
         self.dhoutdh = self.hout * (1 - self.hout)
         for i in xrange(len(self.x)):
             self.dedh = self.dednet[i, :] * self.dnetdhout
-            
+
             self.dedhout = n.dedh.sum(1)
-            self.dedw1 += np.matmul((self.dedhout * self.dhoutdh[i, :]).reshape(1, self.neurons), self.dnetdw1[i, :]) 
-            #self.dedw1 = sum([np.matmul(np.vstack(self.dedhout * i), j) for i,j in zip(self.dhoutdh, self.dnetdw1)])
+            self.dedw1 += np.matmul((self.dedhout * self.dhoutdh[i, :]).reshape(1, self.neurons), self.dnetdw1[i, :])
+            # self.dedw1 = sum([np.matmul(np.vstack(self.dedhout * i), j) for i,j in zip(self.dhoutdh, self.dnetdw1)])
 
         self.delta_w1 = - self.gamma * self.dedw1
         self.delta_w2 = - self.gamma * self.dedw2
@@ -105,22 +106,28 @@ class NeuralNetwork:
 
         # calc new outputs
         self.forward()
-        
-    def solve(self, e=1E-6):
-        while self.change > e:
+
+    def train(self, e=1E-6, max_iter=10000):
+        i = 0
+        for i in xrange(max_iter):
             self.backprop()
-        print 'Solution found'
+            if self.change > e:
+                print('Training converged')
+                break
+        else:
+            print('Did not converge.')
+
 
 if __name__ == '__main__':
     x = np.array([[0.05, 0.10]])
-    #x = np.vstack(range(1, 5))
+    # x = np.vstack(range(1, 5))
     x.sort()
-    #yact = x ** 2
+    # yact = x ** 2
     yact = np.array([[0.01, 0.99]])
     ymax = float(yact.max())
-    y = yact# / ymax
+    y = yact   # / ymax
     n = NeuralNetwork(x, y)
-    n.solve()
+    n.train()
     if 1:
         print '\nModel:'
         print n.y
