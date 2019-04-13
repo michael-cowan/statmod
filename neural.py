@@ -3,47 +3,48 @@ import numpy as np
 
 class NeuralNetwork:
     def __init__(self, inputs, outputs, neurons=2):
-        # input matrix
+        # rinput matrix
         self.x = np.array(inputs)
         if len(self.x.shape) == 1:
             self.x = self.x.reshape(1, self.x.size)
-        
+
         # target values
         self.yact = np.array(outputs)
         if len(self.yact.shape) == 1:
             self.yact = self.yact.reshape(1, self.yact.size)
-        
+
         # number of inputs
         self.nin = self.x.shape[1]
-        
+
         # number of outputs
         self.nout = self.yact.shape[1]
-        
+
         # number of hidden neurons
         self.neurons = neurons
-        
+
         # weights from inputs to hidden neuron layer
         self.w1 = np.random.random([self.nin, neurons])
-        #self.w1 = np.array([[0.15, 0.25], [0.2, 0.3]])
+        # self.w1 = np.array([[0.15, 0.25], [0.2, 0.3]])
 
         # bias term between inputs and hidden neuron layer
         self.b1 = np.random.random()
-        #self.b1 = 0.35
-        
+        # self.b1 = 0.35
+
         # weights from hidden layer to outputs
         self.w2 = np.random.random([neurons, self.nout])
-        #self.w2 = np.array([[0.40, 0.50], [0.45, 0.55]])
-        
+        # self.w2 = np.array([[0.40, 0.50], [0.45, 0.55]])
+
         # bias term between hidden layer and outputs
         self.b2 = np.random.random()
-        #self.b2 = 0.60
-        
-        # accounts for step change within gradient descent optimization approach
+        # self.b2 = 0.60
+
+        # accounts for step change within gradient descent
+        # optimization approach
         self.gamma = 0.5
-        
+
         # calc network's outputs
-        self.forward()
-        
+        # self.forward()
+
         # change in weights per step
         self.change = 10.
 
@@ -80,8 +81,12 @@ class NeuralNetwork:
 
         self.dnetdw2 = self.hout
 
+<<<<<<< HEAD
         self.dedw2 = sum([i * np.vstack(j) for i, j in zip(self.dednet,
                                                            self.dnetdw2)])
+=======
+        self.dedw2 = sum([i * np.vstack(j) for i,j in zip(self.dednet, self.dnetdw2)])
+>>>>>>> 8e50bdfe234090bb8fd7a7a82eef8d635d61f606
 
         # solve for dedw1
         self.dedw1 = np.zeros(self.w1.shape)
@@ -107,6 +112,7 @@ class NeuralNetwork:
         # calc new outputs
         self.forward()
 
+<<<<<<< HEAD
     def train(self, e=1E-6, max_iter=10000):
         i = 0
         for i in xrange(max_iter):
@@ -133,6 +139,26 @@ if __name__ == '__main__':
         print n.y
         print '\nExpected:'
         print n.yact
+=======
+    def solve(self, e=1E-6):
+        while self.change > e:
+            self.backprop()
+        print('Solution found')
+
+if __name__ == '__main__':
+    x = np.array([0.05, 0.10, 0.15, 0.2, 0.25, 0.3, 0.35])
+    x = np.vstack(x)
+    yact = 4 - 2 * np.cos(x)
+    ymax = float(yact.max())
+    y = yact
+    n = NeuralNetwork(x, y)
+    # n.solve()
+    if 0:
+        print('\nModel:')
+        print(n.y)
+        print('\nExpected:')
+        print(n.yact)
+>>>>>>> 8e50bdfe234090bb8fd7a7a82eef8d635d61f606
         import matplotlib.pyplot as plt
         plt.plot(n.yact, n.y, '.')
         plt.plot(np.linspace(0, 1), np.linspace(0, 1))
