@@ -35,8 +35,6 @@ class Solution:
             self.summ = pd.DataFrame()
 
     def __calc_row__(self, row, xin):
-        if type(xin) in [int, float]:
-            xin = [xin]
         n_ls = row.Format.replace('x', '').split('*')
         sol = row.Coefficient
         if row.Format == 'b':
@@ -51,6 +49,11 @@ class Solution:
 
     def func(self, xin):
         """ Calculates model output (yhat) using xin """
+        # ensure xin is iterable and
+        try:
+            _ = sum(xin)
+        except:
+            xin = [xin]
         return self.summ.apply(lambda r: self.__calc_row__(r, xin),
                                axis=1).sum()
 
