@@ -28,6 +28,9 @@ class BaseChromosome(abc.ABC):
     def genome(self, genome):
         self._genome = genome
 
+    def __getitem__(self, i):
+        return self.genome[i]
+
     def __len__(self):
         return len(self._genome)
 
@@ -36,6 +39,61 @@ class BaseChromosome(abc.ABC):
 
     def __lt__(self, other):
         return self.score < other.score
+
+    def single_point_mate(self, chrom2):
+        """
+        Single point mating routine
+        """
+        i = random.randrange(0, len(self))
+        new1, new2 = self[:i] + chrom2[i:], chrom2[:i] + self[i:]
+        return [self.replicate(genome=new1),
+                self.replicate(genome=new2)]
+
+    def k_point_mate(self, chrom2, k=5):
+        """
+        K-point mating algorithm
+        """
+        points = sorted(random.sample(range(len(self)), k=k))
+        points.append(len(self))
+
+        # build new children
+        new1, new2 = [None] * len(self), [None] * len(self)
+        prev = 0
+        parents = [self.genome.copy(), chrom2.genome.copy()]
+        for p in points:
+            new1[prev:p] = parents[0][prev:p]
+            new2[prev:p] = parents[1][prev:p]
+            # reverse parents list
+            parents.reverse()
+
+        return [self.replicate(genome=new1),
+                self.replicate(genome=new2)]
+
+    def mate(self, chrom2):
+        """
+        Default mating routine
+        - Conserves gene counts
+        """
+        new1, new2 = [None] * len(self), [None] * len(self)
+        i = random.randrange(0, len(self))
+        new1[:i] = self[:i]
+        new2[i:] = self[i:]
+        for c in chrom2:
+            if c not in new1:
+                new1[new1.index(None)] = c
+            else:
+                new2[new2.index(None)] = c
+        return [self.replicate(genome=new1),
+                self.replicate(genome=new2)]
+
+    def mutate(self):
+        """
+        Default mutatation routine
+        - randomly swaps two genes
+        """
+        for n in range(max(len(self) // 50, 1)):
+            i, j = random.sample(range(len(self)), 2)
+            self.genome[i], self.genome[j] = self.genome[j], self.genome[i]
 
     @abc.abstractmethod
     def calc_score(self):
@@ -49,8 +107,25 @@ class BaseChromosome(abc.ABC):
         return copy.deepcopy(self)
 
 
+class TestChromosome(BaseChromosome):
+    def __init__(self, length=5, genome=None):
+        if genome is None:
+            self.genome = list(range(length))
+            random.shuffle(self.genome)
+        else:
+            self.genome = genome
+        self.calc_score()
+
+    def calc_score(self):
+        self.score = sum([abs(self.genome[i] - i)**2
+                          for i in range(len(self.genome))])
+
+    def replicate(self, **kwargs):
+        return TestChromosome(length=len(self), **kwargs)
+
+
 class Chromosome(BaseChromosome):
-    def __init__(self, compare, text=None,
+    def __init__(self, compare, genome=None,
                  textlim=(32, 126)):
         self.compare = compare
         self.text_length = len(self.compare)
@@ -60,13 +135,13 @@ class Chromosome(BaseChromosome):
         self.max_diff = self.max_textlim - self.min_textlim
 
         # set text string or make random string of given text_length
-        if text:
-            assert len(text) == self.text_length
-            self.genome = text
-        else:
+        if genome is None:
             self.genome = ''.join([chr(random.randint(*textlim))
                                    for i in range(self.text_length)
                                    ])
+        else:
+            assert len(genome) == self.text_length
+            self.genome = genome
         self.calc_score()
 
     def calc_score(self):
@@ -78,10 +153,10 @@ class Chromosome(BaseChromosome):
 
     def mate(self, chrom):
         children = ['', '']
-        for i in range(len(self.genome)):
+        for i in range(len(self)):
             c = 0 if random.random() < 0.5 else 1
-            children[c] += self.genome[i]
-            children[c - 1] += chrom.genome[i]
+            children[c] += self[i]
+            children[c - 1] += chrom[i]
         return [Chromosome(self.compare, t, textlim=self.textlim)
                 for t in children]
 
@@ -151,7 +226,7 @@ class Population(object):
 
         # population - list of chromosomes
         self._pop = []
-        self.initialize_gen0()
+        self.initialize_gen1()
 
     def __getitem__(self, position):
         return self._pop[position]
@@ -166,7 +241,7 @@ class Population(object):
     def __str__(self):
         return self.summ_results()
 
-    def initialize_gen0(self):
+    def initialize_gen1(self):
         """
         Sets up Pop for a new GA simulation (generation 0)
         """
@@ -183,7 +258,7 @@ class Population(object):
         self.runtime = 0
 
         # track generations
-        self.generation = 0
+        self.generation = 1
 
         # keep track of whether a sim has been run
         self.has_run = False
@@ -489,25 +564,27 @@ class Population(object):
         mean = self.stats[:, 1]
         std = self.stats[:, 2]
 
+        # plot data - only give labels if not secondary
+
         # plot best score as a dotted line
-        ax.plot(best, ':', color=color, label='_nolabel_')
+        ax.plot(best, ':', color=color, label=['BEST', None][secondary])
         # light blue fill of one std deviation
         ax.fill_between(range(len(self.stats)), mean + std, mean - std,
-                        color=fillcolor, label='_nolabel_')
+                        color=fillcolor, label=['STD', None][secondary])
 
         # plot mean as a solid line and minimum as a dotted line
-        ax.plot(mean, color=color, label='_nolabel_')
+        ax.plot(mean, color=color, label=['MEAN', None][secondary])
+
+        # create legend and title if necessary
         if not secondary:
-            # create legend
-            ax.plot([], [], ':', color='gray', label='MIN')
-            ax.plot([], [], color='k', label='MEAN')
-            ax.fill_between([], 0, 0, color='k', label='STD')
-            ax.legend(ncol=3, loc='upper center')
-            ax.set_ylabel('Score')
-            ax.set_xlabel('Generation')
+            fs = 14
+            ax.legend(ncol=3, fontsize=fs - 4, frameon=False)
+            ax.set_ylabel('Score', fontsize=fs)
+            ax.set_xlabel('Generation', fontsize=fs)
 
             if title is not None:
                 ax.set_title(title)
+
             fig.tight_layout()
 
         # save figure if <savepath> was specified
@@ -529,4 +606,14 @@ def stats(goal='<test-text>---TESTinG?---|12343210|'):
     plt.show()
 
 if __name__ == '__main__':
-    stats()
+    # genome length
+    length = 10
+
+    # population size
+    popsize = 10
+
+    tc = TestChromosome(length=length)
+    pop = Population(tc, popsize=popsize, mute_pct=0.2)
+    pop.run(max_nochange=5000, max_gens=-1)
+    pop.plot_results()
+    plt.show()
