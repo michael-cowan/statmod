@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def pca(x, return_transform=False, tranform=None):
+def pca(x, tranform=None):
     """
     PCA transformation using numpy
     - calculate covariance matrix
@@ -13,18 +13,25 @@ def pca(x, return_transform=False, tranform=None):
     x (np.ndarray): features
 
     KArgs:
-    return_transform (bool): if True, eigenvectors of covariance matrix is
-                             returned with the transformed features
-                             (Default: False)
     transform (np.ndarray): if given, used to transform features
                             - transforms new features from different PCA
                             (Default: None)
+
+    Returns (dict):
+    pcs: principal components (transformed features)
+    transform: transformation matrix to convert other features into PCs
+    explained_variance: amount of explained variance by each PC
+    explained_variance_ratio: percentage of explained variance by each PC
     """
+
     # if transform supplied, apply it to pos and return
     if isinstance(tranform, np.ndarray):
         return np.dot(x, tranform)
 
     var = np.var(x, axis=0)
+
+    # center data
+    x -= x.mean(axis=0)
 
     # covariance = (x.T * x) / (n - 1)
     # do not need to subtract off mean since data is centered
@@ -41,14 +48,11 @@ def pca(x, return_transform=False, tranform=None):
     # eigenvectors = transformation matrix
     x_pca = np.dot(x, evecs)
 
-    # return evecs if return_transform
-    if return_transform:
-        return x_pca, evecs
-    else:
-        return x_pca
-    return x_pca, evecs if return_transform else x_pca
+    return dict(pcs=x_pca, transform=evecs, explained_variance=evals,
+                explained_variance_ratio=evals / evals.sum())
 
 
 if __name__ == '__main__':
-    x = np.random.random((100, 10))
-    pca_x, trans = pca(x, return_transform=True)
+    x = np.random.random((1000, 100))
+    res = pca(x)
+    print(res['explained_variance_ratio'][:5])
