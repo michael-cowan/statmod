@@ -12,6 +12,21 @@ CENTER = 30
 
 @functools.total_ordering
 class BaseChromosome(abc.ABC):
+    """
+    Abstract Chromosome class
+    Attributes to define in __init__:
+    - genome (obj): the genome of the chromosome
+    - call self.calc_score()
+
+    Methods to define:
+    - calc_score: sets self.score based on self.genome
+    - replicate: initializes a new chromosome with a random genome
+
+    Optional methods to define:
+    - mate: mates genome with a second chromsome to produce
+            two children chromosomes
+    - mutate: randomly perturbs the genome of the chromosome (in place)
+    """
     @property
     def score(self):
         return self._score
@@ -26,7 +41,9 @@ class BaseChromosome(abc.ABC):
 
     @genome.setter
     def genome(self, genome):
+        """Always calc score when genome is set"""
         self._genome = genome
+        self.calc_score()
 
     def __getitem__(self, i):
         return self.genome[i]
@@ -39,6 +56,9 @@ class BaseChromosome(abc.ABC):
 
     def __lt__(self, other):
         return self.score < other.score
+
+    def __str__(self):
+        return str(self.genome)
 
     def single_point_mate(self, chrom2):
         """
@@ -107,24 +127,23 @@ class BaseChromosome(abc.ABC):
         return copy.deepcopy(self)
 
 
-class TestChromosome(BaseChromosome):
+class SimpleTestChromosome(BaseChromosome):
     def __init__(self, length=5, genome=None):
         if genome is None:
             self.genome = list(range(length))
             random.shuffle(self.genome)
         else:
             self.genome = genome
-        self.calc_score()
 
     def calc_score(self):
         self.score = sum([abs(self.genome[i] - i)**2
                           for i in range(len(self.genome))])
 
     def replicate(self, **kwargs):
-        return TestChromosome(length=len(self), **kwargs)
+        return SimpleTestChromosome(length=len(self), **kwargs)
 
 
-class Chromosome(BaseChromosome):
+class StringTestChromosome(BaseChromosome):
     def __init__(self, compare, genome=None,
                  textlim=(32, 126)):
         self.compare = compare
@@ -142,7 +161,6 @@ class Chromosome(BaseChromosome):
         else:
             assert len(genome) == self.text_length
             self.genome = genome
-        self.calc_score()
 
     def calc_score(self):
         cost = 0
@@ -157,8 +175,7 @@ class Chromosome(BaseChromosome):
             c = 0 if random.random() < 0.5 else 1
             children[c] += self[i]
             children[c - 1] += chrom[i]
-        return [Chromosome(self.compare, t, textlim=self.textlim)
-                for t in children]
+        return [self.replicate(genome=t) for t in children]
 
     def mutate(self):
         i = random.randrange(len(self.genome))
@@ -178,18 +195,17 @@ class Chromosome(BaseChromosome):
 
         newlett = chr(newnum)
         self.genome = self.genome[:i] + newlett + self.genome[i+1:]
-        self.calc_score()
         return self
 
-    def replicate(self):
+    def replicate(self, **kwargs):
         """Creates a new chromosome with a random genome"""
-        return Chromosome(self.compare,
-                          textlim=self.textlim)
+        return StringTestChromosome(self.compare, textlim=self.textlim,
+                                    **kwargs)
 
 
 class Population(object):
     def __init__(self, chromosome, popsize=10, mute_pct=0.2, max_best=False,
-                 random=False):
+                 random=False, prog_print_genome=True):
         """
         Generic Population Class that can simulate Genetic Algorithms
         - Manages a population of Chromosomes
@@ -207,6 +223,10 @@ class Population(object):
                             (Default: 0.8)
         - random (bool): if True, self.run does a random search and
                          does not perform a GA optimization
+                         (Default: False)
+        - prog_print_genome (bool): if True, prints genome as part of
+                                        progress line while running
+                                        (Default: True)
         """
         self.chromosome = chromosome
         self.popsize = popsize
@@ -227,6 +247,8 @@ class Population(object):
         # population - list of chromosomes
         self._pop = []
         self.initialize_gen1()
+
+        self.prog_print_genome = prog_print_genome
 
     def __getitem__(self, position):
         return self._pop[position]
@@ -325,12 +347,12 @@ class Population(object):
         self.sort_pop()
         self.update_stats()
         self.current_best = self[0].score
-        self.print_status()
+        self.print_status(prog_print_genome=self.prog_print_genome)
 
         # increment generation
         self.generation += 1
 
-    def print_status(self, end='\r'):
+    def print_status(self, end='\r', prog_print_genome=True):
         """
         Prints info on current generation of GA
 
@@ -339,9 +361,15 @@ class Population(object):
                      - allows generations to overwrite on same line
                        during simulation
                      (Default: '\r')
+        - prog_print_genome (bool): if True, prints genome as part of
+                                        progress line while running
+                                        (Default: True)
         """
-        val = ' %s   (%i)   %05i' % (self[0].genome, self[0].score,
-                                     self.generation)
+        if prog_print_genome or self.prog_print_genome:
+            val = f'{self[0].genome}\t'
+        else:
+            val = f'{str(self[0])}\t'
+        val += f'{self[0].score}\t{self.generation:05d}'
 
         # format of string to be written to console during sim
         # update_str = ' SCORE: %.5f    %05i'
@@ -385,6 +413,9 @@ class Population(object):
         start = time.time()
 
         while self.generation != self.max_gens:
+            if self[0].score == 0:
+                break
+
             # step to next generation
             self.step()
 
@@ -400,10 +431,9 @@ class Population(object):
                 if nochange == max_nochange:
                     break
 
-            if self[0].score == 0:
-                break
         # print status of final generation
-        self.print_status(end='\n')
+        self.print_status(end='\n',
+                          prog_print_genome=self.prog_print_genome)
 
         # set max_gens to actual generations simulated
         self.max_gens = self.generation
@@ -595,25 +625,27 @@ class Population(object):
 
 
 def stats(goal='<test-text>---TESTinG?---|12343210|'):
-    c = Chromosome(goal)
-    pop = Population(c)
+    c = StringTestChromosome(goal)
+    pop = Population(c, popsize=5)
     pop.run(max_nochange=0)
     print(pop)
-    return
     fig, ax = pop.plot_results()
-    ax.set_title(pop[0].text + '\n' + goal)
+    ax.set_title(f'{pop[0]}\n{goal}')
     fig.tight_layout()
     plt.show()
 
+
 if __name__ == '__main__':
-    # genome length
-    length = 10
+    stats()
 
-    # population size
-    popsize = 10
+    # # genome length
+    # length = 10
 
-    tc = TestChromosome(length=length)
-    pop = Population(tc, popsize=popsize, mute_pct=0.2)
-    pop.run(max_nochange=5000, max_gens=-1)
-    pop.plot_results()
-    plt.show()
+    # # population size
+    # popsize = 10
+
+    # stc = SimpleTestChromosome(length=length)
+    # pop = Population(stc, popsize=popsize, mute_pct=0.2)
+    # pop.run(max_nochange=5000, max_gens=-1)
+    # pop.plot_results()
+    # plt.show()
