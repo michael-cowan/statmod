@@ -34,7 +34,7 @@ class Solution:
         else:
             self.summ = pd.DataFrame()
 
-    def __calc_row__(self, row, xin):
+    def _calc_row(self, row, xin):
         n_ls = row.Format.replace('x', '').split('*')
         sol = row.Coefficient
         if row.Format == 'b':
@@ -54,7 +54,7 @@ class Solution:
             _ = sum(xin)
         except:
             xin = [xin]
-        return self.summ.apply(lambda r: self.__calc_row__(r, xin),
+        return self.summ.apply(lambda r: self._calc_row(r, xin),
                                axis=1).sum()
 
     def show(self):
@@ -254,7 +254,9 @@ def ols_multi(xi, y, order=2, intercept=True, pair_terms=True, show=True,
 
 if __name__ == '__main__':
     x = np.random.random([500, 10])
-    y = x.sum(axis=1)
+
+    # sum the columns, but add some noise
+    y = x.sum(axis=1) + 0.5 * np.random.random(500)
 
     sol = fit(x, y, 3)
 
@@ -262,8 +264,9 @@ if __name__ == '__main__':
     ans = sol.func(z)
 
     f, a = plt.subplots()
-    a.plot([y.min(), y.max()], [y.min(), y.max()], color='k')
-    for i in range(len(y)):
-        a.plot(y[i], x[i], 'o', color='r')
+    a.plot([y.min(), y.max()], [y.min(), y.max()], color='k', zorder=-100)
+    a.scatter(y, [sol.func(i) for i in x])
+    a.set_xlabel('Actual')
+    a.set_ylabel('Model')
 
-    f.show()
+    plt.show()
