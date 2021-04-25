@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
-import ols
+import statmod.ols as ols
 
 
 def elastic_net(func, x, y, bguess, alpha, lam, const_alpha=False):
@@ -106,7 +106,7 @@ def test(alpha=0.5, lam=0.1, testfuncb=[2, 3, 4], showfigs=True):
     fig.canvas.set_window_title(title)
     ax.set_title('%s\nAlpha = %.2f' % (title, alpha))
     if showfigs:
-        fig.show()
+        plt.show()
     return fig, ax, sol, sol2
 
 if __name__ == '__main__':
