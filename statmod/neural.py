@@ -10,7 +10,7 @@ Example Artifical Neural Network
 
 
 class NeuralNetwork:
-    def __init__(self, inputs, outputs, neurons=2, activation='sigmoid'):
+    def __init__(self, inputs, outputs, neurons=128, activation='sigmoid'):
         # input matrix
         self.x = np.vstack(inputs)
 
@@ -95,9 +95,16 @@ class NeuralNetwork:
         self.w1 -= learning_rate * self.delta_w1
         self.w2 -= learning_rate * self.delta_w2
 
-    def train(self, epochs=100, batch_size=16, learning_rate=0.01):
+    def train(self, epochs=400, batch_size=16, learning_rate=0.01):
+        # create epoch string format using length of epochs string
+        # will 0-pad incremental epochs in output
+        epoch_fmt = f'0{len(str(epochs))}d'
+
+        # create copies of inputs (X) and outputs (yact)
         X = self.x.copy()
         yact = self.yact.copy()
+        # track results
+        # [epoch_i, MSE_i]
         res = np.zeros((epochs, 2))
         res[:, 0] = range(epochs)
         for epoch in range(epochs):
@@ -107,7 +114,7 @@ class NeuralNetwork:
                 self.forward()
                 self.backprop(learning_rate)
             res[epoch, 1] = self.e
-            print(f'Epoch {epoch + 1:05d}: MSE = {self.e:.5f}')
+            print(f'Epoch {epoch + 1:{epoch_fmt}} / {epochs}: MSE = {self.e:.5f}')
         self.x = X
         self.yact = yact
         self.forward()
@@ -122,13 +129,15 @@ if __name__ == '__main__':
     # fit NN to a polynomial
     y = x ** 2 + 3 * x
 
-    # normalize outputs: [0, 1]
+    # compress outputs: [0.25, 0.75]
     # since we're using a sigmoid activation on the output layer
     y /= y.max()
+    y *= 0.5
+    y += 0.25
 
     # initialize and train neural network
-    nn = NeuralNetwork(x, y, 128)
-    results = nn.train()
+    nn = NeuralNetwork(x, y, neurons=128)
+    results = nn.train(epochs=400, batch_size=16, learning_rate=0.01)
 
     # plot a learning curve
     plt.figure(figsize=(10, 5))
