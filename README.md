@@ -7,5 +7,6 @@ Python package containing some machine learning algorithms implemented with NumP
 - Ordinary Least Squares (OLS)
 - Elastic Net Regression (which includes Ridge Regression and LASSO)
 - Artificial Neural Network (ANN)
+- Decision Tree Classifier
 - Generalized Genetic Algorithm (GA)
 - Principal Component Analysis (PCA)
